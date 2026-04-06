@@ -10,6 +10,8 @@ RUN echo "date.timezone = Asia/Jerusalem" > /usr/local/etc/php/conf.d/tz.ini
 
 WORKDIR /var/www/html
 
+COPY . .
+
 EXPOSE 80
 
 CMD ["php", "-S", "0.0.0.0:80", "-t", "public"]
