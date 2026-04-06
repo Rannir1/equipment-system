@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: equipment_app
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: equipment_db
+      DB_USER: equipment_user
+      DB_PASS: equipment_pass
+      APP_SECRET: change_this_secret_in_production_32chars
+      APP_ENV: development
+    networks:
+      - equipment_net
+
+  db:
+    image: mysql:8.0
+    container_name: equipment_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: equipment_db
+      MYSQL_USER: equipment_user
+      MYSQL_PASSWORD: equipment_pass
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql
+      - ./database/import_data.sql:/docker-entrypoint-initdb.d/03_import_data.sql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_password"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    networks:
+      - equipment_net
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: equipment_phpmyadmin
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_USER: equipment_user
+      PMA_PASSWORD: equipment_pass
+    depends_on:
+      - db
+    networks:
+      - equipment_net
+
+volumes:
+  db_data:
+
+networks:
+  equipment_net:
+    driver: bridge
