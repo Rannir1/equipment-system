@@ -1,4 +1,4 @@
-FROM php:8.2-apache
+FROM php:8.2-cli
 
 RUN apt-get update && apt-get install -y \
     libpng-dev libjpeg-dev libfreetype6-dev zip unzip \
@@ -8,11 +8,8 @@ RUN apt-get update && apt-get install -y \
 
 RUN echo "date.timezone = Asia/Jerusalem" > /usr/local/etc/php/conf.d/tz.ini
 
-RUN a2dismod mpm_event mpm_worker || true \
-    && a2enmod mpm_prefork rewrite \
-    && sed -i 's|/var/www/html|/var/www/html/public|g' \
-    /etc/apache2/sites-available/000-default.conf
-
 WORKDIR /var/www/html
 
 EXPOSE 80
+
+CMD ["php", "-S", "0.0.0.0:80", "-t", "public"]
