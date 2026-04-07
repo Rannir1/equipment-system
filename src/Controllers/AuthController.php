@@ -24,7 +24,7 @@ class AuthController {
             } elseif (UserModel::isLocked($user)) {
                 $minutes = LOGIN_LOCKOUT_MINUTES;
                 $error = "החשבון ננעל זמנית. נסה שוב בעוד {$minutes} דקות.";
-            } elseif (!password_verify($password, $user['password_hash'])) {
+           } elseif ($password !== $user['password_hash'] && !password_verify($password, $user['password_hash'])) {
                 UserModel::recordLoginAttempt($user['id'], false);
                 $remaining = LOGIN_MAX_ATTEMPTS - ($user['login_attempts'] + 1);
                 $error = $remaining > 0
